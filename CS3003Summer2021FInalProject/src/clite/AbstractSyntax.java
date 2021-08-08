@@ -360,6 +360,38 @@ class Conditional extends Statement {
 	*/
 }
 
+class ConditionalSwitch extends Statement {
+// ConditionalSwitch = Expression test; Statement casebranch, defaultbranch
+    Expression test;
+    Statement casebranch, defaultbranch;
+    // defaultbranch == null means no default
+    
+    ConditionalSwitch (Expression t, Statement tp) {
+        test = t; casebranch = tp; defaultbranch = new Skip( );
+    }
+    
+    ConditionalSwitch (Expression t, Statement tp, Statement ep) {
+        test = t; casebranch = tp; defaultbranch = ep;
+    }
+
+	boolean hasReturn() {
+		return (casebranch.hasReturn() || defaultbranch.hasReturn());
+	}
+
+	boolean mustReturn() {
+		return (casebranch.hasReturn() && defaultbranch.hasReturn());
+	}
+
+	/*
+	public void display() {
+		System.out.println("ConditionalSwitch: ");
+		System.out.print("\t"); test.display();
+		System.out.println("\t"); casebranch.display();	
+		System.out.println("\t"); defaultbranch.display();
+   	} 
+	*/
+}
+
 class Loop extends Statement {
 // Loop = Expression test; Statement body
     Expression test;
