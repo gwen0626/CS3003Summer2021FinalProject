@@ -90,13 +90,6 @@ class Program {
 			String then_branch = spcing + "then:\n" + inner_display(spc, spc + spcing, con_node.thenbranch);
 			String else_branch = spcing +  "else:\n " + inner_display(spc, spc + spcing, con_node.elsebranch);
 			return prefix + test + then_branch + else_branch;
-		} if (node instanceof ConditionalSwitch) {
-			ConditionalSwitch swi_node = (ConditionalSwitch) node;
-			String prefix = spcing + "ConditionalSwitch:\n";
-			String test = inner_display(spc, spc + spcing, swi_node.test);
-			String case_branch = spcing + "case:\n" + inner_display(spc, spc + spcing, swi_node.casebranch);
-			String default_branch = spcing +  "default:\n " + inner_display(spc, spc + spcing, swi_node.defaultbranch);
-			return prefix + test + case_branch + default_branch;
 		} if (node instanceof Loop) {
 			Loop l_node = (Loop) node;
 			String prefix = spcing + "Loop:\n";
@@ -264,6 +257,7 @@ class Type {
     final static Type BOOL = new Type("bool");
     final static Type CHAR = new Type("char");
     final static Type FLOAT = new Type("float");
+    final static Type DOUBLE = new Type("double");
     final static Type VOID = new Type("void");
     // final static Type UNDEFINED = new Type("undef");
     
@@ -279,6 +273,8 @@ class Type {
 		return "I";
 	else if (this.equals(Type.FLOAT))
 		return "F";
+	else if (this.equals(Type.DOUBLE))
+		return "D";
 	else if (this.equals(Type.VOID))
 		return "V";
 	else
@@ -490,6 +486,11 @@ abstract class Value extends Expression {
         assert false : "should never reach here";
         return ' ';
     }
+
+    double doubleValue ( ) {
+        assert false : "should never reach here";
+        return 0.0;
+    }
     
     float floatValue ( ) {
         assert false : "should never reach here";
@@ -504,6 +505,7 @@ abstract class Value extends Expression {
         if (type == Type.INT) return new IntValue( );
         if (type == Type.BOOL) return new BoolValue( );
         if (type == Type.CHAR) return new CharValue( );
+        if (type == Type.DOUBLE) return new DoubleValue( );
         if (type == Type.FLOAT) return new FloatValue( );
         throw new IllegalArgumentException("Illegal type in mkValue");
     }
@@ -566,6 +568,25 @@ class CharValue extends Value {
 
     char charValue ( ) {
         assert !undef : "reference to undefined char value";
+        return value;
+    }
+
+    public String toString( ) {
+        if (undef)  return "undef";
+        return "" + value;
+    }
+
+}
+
+class DoubleValue extends Value {
+    private double value = 0;
+
+    DoubleValue ( ) { type = Type.DOUBLE; }
+
+    DoubleValue (double v) { this( ); value = v; undef = false; }
+
+    double doubleValue ( ) {
+        assert !undef : "reference to undefined double value";
         return value;
     }
 
@@ -660,10 +681,11 @@ class Operator {
     // UnaryOp = !    
     final static String NOT = "!";
     final static String NEG = "-NEG"; //This has been changed from "-" to "-NEG" to avoid ambiguity with MINUS
-    // CastOp = int | float | char
+    // CastOp = int | float | char | double
     final static String INT = "int";
     final static String FLOAT = "float";
     final static String CHAR = "char";
+    final static String DOUBLE = "double";
     // Typed Operators
     // RelationalOp = < | <= | == | != | >= | >
     final static String INT_LT = "INT<";
@@ -680,6 +702,20 @@ class Operator {
     final static String INT_POWER = "INT^";
     // UnaryOp = !    
     final static String INT_NEG = "INT-NEG";
+ // RelationalOp = < | <= | == | != | >= | >
+    final static String DOUBLE_LT = "DOUBLE<";
+    final static String DOUBLE_LE = "DOUBLE<=";
+    final static String DOUBLE_EQ = "DOUBLE==";
+    final static String DOUBLE_NE = "DOUBLE!=";
+    final static String DOUBLE_GT = "DOUBLE>";
+    final static String DOUBLE_GE = "DOUBLE>=";
+    // ArithmeticOp = + | - | * | /
+    final static String DOUBLE_PLUS = "DOUBLE+";
+    final static String DOUBLE_MINUS = "DOUBLE-";
+    final static String DOUBLE_TIMES = "DOUBLE*";
+    final static String DOUBLE_DIV = "DOUBLE/";
+    // UnaryOp = !    
+    final static String DOUBLE_NEG = "DOUBLE-NEG";
     // RelationalOp = < | <= | == | != | >= | >
     final static String FLOAT_LT = "FLOAT<";
     final static String FLOAT_LE = "FLOAT<=";
@@ -714,6 +750,10 @@ class Operator {
     final static String F2I = "F2I";
     final static String C2I = "C2I";
     final static String I2C = "I2C";
+    final static String I2D = "I2D";
+    final static String D2I = "D2I";
+    final static String D2F = "D2F";
+    final static String F2D = "F2D";
     
     String val;
     
@@ -736,14 +776,17 @@ class Operator {
             || val.equals(INT_POWER)
             || val.equals(FLOAT_PLUS) || val.equals(FLOAT_MINUS)
             || val.equals(FLOAT_TIMES) || val.equals(FLOAT_DIV)
+            || val.equals(DOUBLE_PLUS) || val.equals(DOUBLE_MINUS)
+            || val.equals(DOUBLE_TIMES) || val.equals(DOUBLE_DIV);
             || val.equals(FLOAT_POWER);
     }
     boolean NotOp ( ) { return val.equals(NOT) ; }
     boolean NegateOp ( ) { return (val.equals(NEG) || val.equals(INT_NEG) || 
-				   val.equals(FLOAT_NEG)); }
+				   val.equals(FLOAT_NEG)) || val.equals(DOUBLE_NEG); }
     boolean intOp ( ) { return val.equals(INT); }
     boolean floatOp ( ) { return val.equals(FLOAT); }
     boolean charOp ( ) { return val.equals(CHAR); }
+    boolean doubleOp ( ) { return val.equals(DOUBLE); }
 
     final static String intMap[ ] [ ] = {
         {PLUS, INT_PLUS}, {MINUS, INT_MINUS},
@@ -751,7 +794,16 @@ class Operator {
         {POWER, INT_POWER},
         {EQ, INT_EQ}, {NE, INT_NE}, {LT, INT_LT},
         {LE, INT_LE}, {GT, INT_GT}, {GE, INT_GE},
-        {NEG, INT_NEG}, {FLOAT, I2F}, {CHAR, I2C}
+        {NEG, INT_NEG}, {FLOAT, I2F}, {CHAR, I2C},
+        {DOUBLE, I2D}
+    };
+
+    final static String doubleMap[ ] [ ] = {
+        {PLUS, DOUBLE_PLUS}, {MINUS, DOUBLE_MINUS},
+        {TIMES, DOUBLE_TIMES}, {DIV, DOUBLE_DIV},
+        {EQ, DOUBLE_EQ}, {NE, DOUBLE_NE}, {LT, DOUBLE_LT},
+        {LE, DOUBLE_LE}, {GT, DOUBLE_GT}, {GE, DOUBLE_GE},
+        {NEG, DOUBLE_NEG}, {INT, D2I}, {FLOAT, D2F}
     };
 
     final static String floatMap[ ] [ ] = {
@@ -760,7 +812,7 @@ class Operator {
         {POWER, FLOAT_POWER},
         {EQ, FLOAT_EQ}, {NE, FLOAT_NE}, {LT, FLOAT_LT},
         {LE, FLOAT_LE}, {GT, FLOAT_GT}, {GE, FLOAT_GE},
-        {NEG, FLOAT_NEG}, {INT, F2I}
+        {NEG, FLOAT_NEG}, {INT, F2I}, {DOUBLE, F2D}
     };
 
     final static String charMap[ ] [ ] = {
@@ -785,6 +837,10 @@ class Operator {
 
     final static public Operator intMap (String op) {
         return map (intMap, op);
+    }
+
+    final static public Operator doubleMap (String op) {
+        return map (doubleMap, op);
     }
 
     final static public Operator floatMap (String op) {

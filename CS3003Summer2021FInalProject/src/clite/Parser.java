@@ -183,18 +183,20 @@ public class Parser {
 		t = Type.BOOL;
 	} else if (token.type().equals(TokenType.Char)) {
 		t = Type.CHAR;
+	} else if (token.type().equals(TokenType.Double)) {
+		t = Type.DOUBLE;
 	} else if (token.type().equals(TokenType.Float)) {
 		t = Type.FLOAT;
 	} else if (token.type().equals(TokenType.Void)) {
 		t = Type.VOID;
-	} else error("int | bool | float | char");
+	} else error("int | bool | float | char | double");
         // student exercise
         return t;          
     }
   
     private Statement statement() {
-        // Statement --> ; | Block | Assignment | IfStatement | SwitchStatement | WhileStatement | CallStatement | ReturnStatement | Print
-        // Statement --> ; | Block | Assignment | IfStatement | SwitchStatement | WhileStatement | Print
+        // Statement --> ; | Block | Assignment | IfStatement | WhileStatement | CallStatement | ReturnStatement | Print
+        // Statement --> ; | Block | Assignment | IfStatement | WhileStatement | Print
         Statement s = new Skip();
 	if (token.type().equals(TokenType.LeftBrace)) {
 		match(TokenType.LeftBrace);
@@ -209,8 +211,6 @@ public class Parser {
 		match(TokenType.Semicolon);
 	} else if (token.type().equals(TokenType.If)) {
 		s = ifStatement();
-	} else if (token.type().equals(TokenType.Switch)) {
-		s = switchStatement();
 	} else if (token.type().equals(TokenType.While)) {
 		s = whileStatement();
 	} else if (token.type().equals(TokenType.Return)) {
@@ -270,21 +270,6 @@ public class Parser {
 	match(TokenType.RightParen);
 	Statement tp = statement();
 	if (token.type().equals(TokenType.Else)) {
-		match(token.type());
-		Statement ep = statement();
-		return new Conditional(test, tp, ep);
-	}
-        return new Conditional(test, tp);  // student exercise
-    }
-    
-    private Conditional switchStatement () {
-        // SwitchStatement --> switch ( Expression ) case constant: Statement [ default: Statement ]
-	match(token.type());
-	match(TokenType.LeftParen);
-	Expression test = expression();
-	match(TokenType.RightParen);
-	Statement tp = statement();
-	if (token.type().equals(TokenType.Default)) {
 		match(token.type());
 		Statement ep = statement();
 		return new Conditional(test, tp, ep);
@@ -451,6 +436,9 @@ public class Parser {
 	} else if (token.type().equals(TokenType.IntLiteral)) {
 		int i_val = Integer.parseInt(match(token.type()));
 		val = new IntValue(i_val);
+	} else if (token.type().equals(TokenType.DoubleLiteral)) {
+		double d_val = Double.parseDouble(match(token.type()));
+		val = new DoubleValue(d_val);
 	} else if (token.type().equals(TokenType.FloatLiteral)) {
 		float f_val = Float.parseFloat(match(token.type()));
 		val = new FloatValue(f_val);
@@ -493,6 +481,7 @@ public class Parser {
     private boolean isType( ) {
         return token.type().equals(TokenType.Int)
             || token.type().equals(TokenType.Bool) 
+            || token.type().equals(TokenType.Double)
             || token.type().equals(TokenType.Float)
             || token.type().equals(TokenType.Char)
 	    || token.type().equals(TokenType.Void);
@@ -501,6 +490,7 @@ public class Parser {
     private boolean isLiteral( ) {
         return token.type().equals(TokenType.IntLiteral) ||
             isBooleanLiteral() ||
+            token.type().equals(TokenType.DoubleLiteral) ||
             token.type().equals(TokenType.FloatLiteral) ||
             token.type().equals(TokenType.CharLiteral);
     }

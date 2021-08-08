@@ -14,9 +14,9 @@ public class Token {
     public static final Token charTok = new Token(TokenType.Char, "char");
     public static final Token elseTok = new Token(TokenType.Else, "else");
     public static final Token falseTok = new Token(TokenType.False, "false");
+    public static final Token doubleTok = new Token(TokenType.Double, "double");
     public static final Token floatTok = new Token(TokenType.Float, "float");
     public static final Token ifTok = new Token(TokenType.If, "if");
-    public static final Token switchTok = new Token(TokenType.Switch, "switch");
     public static final Token intTok = new Token(TokenType.Int, "int");
     public static final Token mainTok = new Token(TokenType.Main, "main");
     public static final Token trueTok = new Token(TokenType.True, "true");
@@ -82,6 +82,10 @@ public class Token {
         return new Token(TokenType.IntLiteral, name);
     }
 
+    public static Token mkDoubleLiteral (String name) {
+        return new Token(TokenType.DoubleLiteral, name);
+    }
+    
     public static Token mkFloatLiteral (String name) {
         return new Token(TokenType.FloatLiteral, name);
     }

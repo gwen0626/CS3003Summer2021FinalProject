@@ -36,14 +36,24 @@ public class TypeTransformer {
             Expression t1 = T (b.term1, tm);
             Expression t2 = T (b.term2, tm);
             if (typ1 == Type.INT) {
-		if (typ2 == Type.FLOAT)
-			t1 = new Unary (new Operator(Operator.I2F), t1);
-		return new Binary(b.op.intMap(b.op.val), t1,t2);
+            	if (typ2 == Type.FLOAT)
+            		t1 = new Unary (new Operator(Operator.I2F), t1);
+            	else if (typ2 == Type.DOUBLE)
+            		t1 = new Unary (new Operator(Operator.I2D), t1);
+            	return new Binary(b.op.intMap(b.op.val), t1,t2);
             } else if (typ1 == Type.FLOAT) { 
-	        if (typ2 == Type.INT)	
-			t2 = new Unary (new Operator(Operator.I2F), t2);
-                return new Binary(b.op.floatMap(b.op.val), t1,t2);
-            } else if (typ1 == Type.CHAR) 
+            	if (typ2 == Type.INT)	
+            		t2 = new Unary (new Operator(Operator.I2F), t2);
+            	else if (typ2 == Type.DOUBLE)	
+            		t2 = new Unary (new Operator(Operator.D2F), t2);
+            	return new Binary(b.op.floatMap(b.op.val), t1,t2);
+            } else if (typ1 == Type.DOUBLE) { 
+            	if (typ2 == Type.INT)	
+            		t2 = new Unary (new Operator(Operator.I2D), t2);
+            	else if (typ2 == Type.FLOAT)
+            		t2 = new Unary (new Operator(Operator.F2D), t2);
+            	return new Binary(b.op.doubleMap(b.op.val), t1,t2);
+    	    } else if (typ1 == Type.CHAR) 
                 return new Binary(b.op.charMap(b.op.val), t1,t2);
             else if (typ1 == Type.BOOL) 
                 return new Binary(b.op.boolMap(b.op.val), t1,t2);
@@ -55,14 +65,16 @@ public class TypeTransformer {
 	    Type typ = StaticTypeCheck.typeOf(u.term, tm);
 	    Expression t = T (u.term, tm);
 	    if (typ == Type.INT)
-		return new Unary(u.op.intMap(u.op.val), t);
+	    	return new Unary(u.op.intMap(u.op.val), t);
 	    else if (typ == Type.FLOAT)
-		return new Unary(u.op.floatMap(u.op.val), t);
+	    	return new Unary(u.op.floatMap(u.op.val), t);
+	    else if (typ == Type.DOUBLE)
+			return new Unary(u.op.doubleMap(u.op.val), t);
 	    else if (typ == Type.CHAR)
-		return new Unary(u.op.charMap(u.op.val), t);
+	    	return new Unary(u.op.charMap(u.op.val), t);
 	    else if (typ == Type.BOOL)
-		return new Unary(u.op.boolMap(u.op.val), t);
-            throw new IllegalArgumentException("should never reach here");
+	    	return new Unary(u.op.boolMap(u.op.val), t);
+	    throw new IllegalArgumentException("should never reach here");
 	}
 	if (e instanceof CallExpression) {
 		CallExpression c = (CallExpression) e;
@@ -127,13 +139,6 @@ public class TypeTransformer {
             Statement tbr = T (c.thenbranch, tm);
             Statement ebr = T (c.elsebranch, tm);
             return new Conditional(test,  tbr, ebr);
-        }
-        if (s instanceof ConditionalSwitch) {
-            ConditionalSwitch c = (ConditionalSwitch)s;
-            Expression test = T (c.test, tm);
-            Statement tbr = T (c.casebranch, tm);
-            Statement ebr = T (c.defaultbranch, tm);
-            return new ConditionalSwitch(test,  tbr, ebr);
         }
         if (s instanceof Loop) {
             Loop l = (Loop)s;

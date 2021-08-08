@@ -48,7 +48,6 @@ public class Semantics {
         if (s instanceof Skip) return M((Skip)s, state);
         if (s instanceof Assignment)  return M((Assignment)s, state);
         if (s instanceof Conditional)  return M((Conditional)s, state);
-        if (s instanceof ConditionalSwitch)  return M((ConditionalSwitch)s, state);
         if (s instanceof Loop)  return M((Loop)s, state);
         if (s instanceof Block)  return M((Block)s, state);
 	if (s instanceof CallStatement) return M((CallStatement)s, state);
@@ -86,14 +85,6 @@ public class Semantics {
             		return M (c.thenbranch, state);
 		} else {
             		return M (c.elsebranch, state);
-		}
-    }
-    
-    State M (ConditionalSwitch c, State state) {
-        if (M(c.test, state).boolValue( )) {
-            		return M (c.casebranch, state);
-		} else {
-            		return M (c.defaultbranch, state);
 		}
     }
   
@@ -167,6 +158,24 @@ public class Semantics {
 	if (op.val.equals(Operator.INT_NE))
 	    return new BoolValue(v1.intValue() != v2.intValue());
 
+	if (op.val.equals(Operator.DOUBLE_LT))
+	    return new BoolValue(v1.doubleValue() < v2.doubleValue());
+	if (op.val.equals(Operator.DOUBLE_GT))
+	    return new BoolValue(v1.doubleValue() > v2.doubleValue());
+	if (op.val.equals(Operator.DOUBLE_EQ))
+	    return new BoolValue(v1.doubleValue() == v2.doubleValue());
+	if (op.val.equals(Operator.DOUBLE_NE))
+	    return new BoolValue(v1.doubleValue() != v2.doubleValue());
+
+	if (op.val.equals(Operator.DOUBLE_PLUS)) 
+            return new DoubleValue(v1.doubleValue( ) + v2.doubleValue( ));
+        if (op.val.equals(Operator.DOUBLE_MINUS)) 
+            return new DoubleValue(v1.doubleValue( ) - v2.doubleValue( ));
+        if (op.val.equals(Operator.DOUBLE_TIMES)) 
+            return new DoubleValue(v1.doubleValue( ) * v2.doubleValue( ));
+        if (op.val.equals(Operator.DOUBLE_DIV)) 
+            return new DoubleValue(v1.doubleValue( ) / v2.doubleValue( ));
+
 	if (op.val.equals(Operator.FLOAT_LT))
 	    return new BoolValue(v1.floatValue() < v2.floatValue());
 	if (op.val.equals(Operator.FLOAT_GT))
@@ -210,6 +219,8 @@ public class Semantics {
             return new BoolValue(!v.boolValue( ));
         else if (op.val.equals(Operator.INT_NEG))
             return new IntValue(-v.intValue( ));
+        else if (op.val.equals(Operator.DOUBLE_NEG))
+            return new DoubleValue(-v.doubleValue( ));
         else if (op.val.equals(Operator.FLOAT_NEG)) {
             return new FloatValue(-v.floatValue( ));
         } else if (op.val.equals(Operator.I2F)) 
@@ -220,6 +231,14 @@ public class Semantics {
             return new IntValue((int)(v.charValue( )));
         else if (op.val.equals(Operator.I2C))
             return new CharValue((char)(v.intValue( )));
+        else if (op.val.equals(Operator.D2I))
+            return new IntValue((int)(v.doubleValue( )));
+        else if (op.val.equals(Operator.I2D))
+            return new DoubleValue((double)(v.intValue( )));
+        else if (op.val.equals(Operator.D2F)) 
+            return new FloatValue((float)(v.doubleValue( ))); 
+        else if (op.val.equals(Operator.F2D))
+            return new DoubleValue((double)(v.floatValue( )));
         throw new IllegalArgumentException("should never reach here");
     } 
 
